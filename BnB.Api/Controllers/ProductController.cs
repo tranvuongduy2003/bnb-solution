@@ -5,6 +5,7 @@ using BnB.Api.Dto.Review;
 using BnB.Api.Enums;
 using BnB.Api.Interfaces;
 using BnB.Api.Models;
+using BnB.Api.Services.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,14 +15,16 @@ namespace BnB.Api.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
+        private readonly IRecommendService _recommendService;
         private readonly IImageRepository _imageRepository;
         private readonly IReviewRepository _reviewRepository;
         private readonly IProductRepository _productRepository;
         private readonly IMapper _mapper;
         protected ResponseDto _response;
 
-        public ProductController(IImageRepository imageRepository, IReviewRepository reviewRepository, IProductRepository productRepository,IMapper mapper)
+        public ProductController(IRecommendService recommendService, IImageRepository imageRepository, IReviewRepository reviewRepository, IProductRepository productRepository,IMapper mapper)
         {
+            _recommendService = recommendService;
             _imageRepository = imageRepository;
             _reviewRepository = reviewRepository;
             _productRepository = productRepository;
@@ -46,6 +49,34 @@ namespace BnB.Api.Controllers
                 }
 
                 _response.Data = productDtos;
+                _response.Message = "Get products successfully!";
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message.ToString();
+                return StatusCode(StatusCodes.Status500InternalServerError, _response);
+            }
+
+            return Ok(_response);
+        }
+        
+        [HttpGet("recommended")]
+        public async Task<IActionResult> GetRecommendedProducts()
+        {
+            try
+            {
+                var products = await _recommendService.GetRecommendedProducts();
+                foreach (var productDto in products)
+                {
+                    var images = await _imageRepository.GetImagesByProductId(productDto.Id);
+                    productDto.Images = images;
+                    var reviews = await _reviewRepository.GetReviewsByProductId(productDto.Id);
+                    var totalRating = reviews.Sum(r => r.Rating);
+                    productDto.Rating = totalRating / reviews.Count();
+                }
+
+                _response.Data = products;
                 _response.Message = "Get products successfully!";
             }
             catch (Exception ex)

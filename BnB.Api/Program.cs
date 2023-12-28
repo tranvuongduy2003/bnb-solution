@@ -47,6 +47,9 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals);
 
+builder.Services.AddHttpClient("Product",
+        u => u.BaseAddress = new Uri(builder.Configuration["ServiceUrls:RecommendedProductAPI"]));
+
 // Scopes
 builder.Services.AddScoped<IBrandRepository, BrandRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -58,6 +61,7 @@ builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IStatisticRepository, StatisticRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IRecommendService, RecommendService>();
 
 // Swagger config
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
