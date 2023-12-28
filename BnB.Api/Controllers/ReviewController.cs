@@ -22,8 +22,8 @@ namespace BnB.Api.Controllers
             _response = new();
         }
 
-        [HttpGet("{productIdsssss}")]
-        public async Task<IActionResult> GetReviews(string productId)
+        [HttpGet("{productId}")]
+        public async Task<IActionResult> GetReviews([FromRoute] string productId)
         {
             try
             {
